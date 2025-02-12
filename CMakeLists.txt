@@ -37,6 +37,7 @@ pico_sdk_init()
 
 add_executable(embarcatech-u4-c8-tarefa1
     src/main.c
+    src/ssd1306.c
 )
 
 pico_set_program_name(embarcatech-u4-c8-tarefa1 "embarcatech-u4-c8-tarefa1")
@@ -57,8 +58,8 @@ target_include_directories(embarcatech-u4-c8-tarefa1 PRIVATE
 
 # Add any user requested libraries
 target_link_libraries(embarcatech-u4-c8-tarefa1 
-        
-        )
+    hardware_i2c
+)
 
 pico_add_extra_outputs(embarcatech-u4-c8-tarefa1)
 
