@@ -3,6 +3,7 @@
 #include "pwm.h"
 #include "joystick.h"
 #include "interruption.h"
+#include "ssd1306.h"
 
 #define A_BUTTON_PIN 5 // GPIO conectada ao botão A
 #define I2C_PORT i2c1 // Porta I2C que será utilizada para a comunicação com o display
@@ -21,6 +22,7 @@
 #define DEBOUNCE_INTERVAL 200000 // Define um intervalo de 200 milisssegundos para debounce
 
 uint last_event_time;
+ssd1306_t display; // Inicializa a estrutura do display
 
 void update_led_bright(){
     uint x_axis_value = get_joystick_x_value(); // Obtem o valor do eixo x
@@ -70,6 +72,33 @@ void buttons_irq_handler(uint gpio, uint32_t events){
     }
 }
 
+void draw_square(uint top, uint left){
+    ssd1306_rect(&display, top, left, 8, 8, true, true); // Desenha um quadrado
+    ssd1306_send_data(&display); // Envia os dados para o display
+}
+
+void draw_rectangle(uint top, uint left, uint width, uint height){
+    ssd1306_rect(&display, top, left, width, height, true, false); // Desenha um retângulo
+    ssd1306_send_data(&display); // Envia os dados para o display
+}
+
+void clear_display(){
+    ssd1306_fill(&display, false); // Limpa o display. O display inicia com todos os pixels apagados.
+    ssd1306_send_data(&display); // Envia os dados para o display
+}
+
+void init_display(){
+    i2c_init(I2C_PORT, OLED_DISPLAY_CLOCK_FREQUENCY); // Inicializa a comunicação I2C
+    gpio_set_function(OLED_DISPLAY_SDA_PIN,GPIO_FUNC_I2C); // Diz ao microcontrolador para usar o pino para comunicação I2C
+    gpio_set_function(OLED_DISPLAY_SCL_PIN,GPIO_FUNC_I2C); // Diz ao microcontrolador para usar o pino para comunicação I2C
+    gpio_pull_up(OLED_DISPLAY_SCL_PIN); // Configura um resistor de pull-up para o pino, conforme as intruções do protocolo I2C
+    gpio_pull_up(OLED_DISPLAY_SDA_PIN); // Configura um resistor de pull-up para o pino, conforme as intruções do protocolo I2C
+
+    ssd1306_init(&display, WIDTH, HEIGHT, false, OLED_DISPLAY_ADDRESS, I2C_PORT); // Inicializa o display
+    ssd1306_config(&display); // Configura o display
+    ssd1306_send_data(&display); // Envia os dados para o display
+}
+
 int main()
 {
     stdio_init_all(); // Inicializa a entrada e saída padrão
@@ -84,6 +113,10 @@ int main()
     gpio_put(RGB_LED_GREEN_PIN,0); // Inicializa a GPIO com o nível baixo
 
     initialize_buttons(A_BUTTON_PIN,JOYSTICK_BUTTON_PIN,buttons_irq_handler); // Configura a interrupção para o botão do joystick
+
+    init_display(); //Inicializa o display OLED
+
+    clear_display(); // Limpa o display OLED
 
     while (true) {
         update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
