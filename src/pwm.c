@@ -28,3 +28,10 @@ float get_duty_cycle(uint wrap, float percentage){
 void update_duty_cycle(uint pin, uint duty_cycle){
     pwm_set_gpio_level(pin,duty_cycle); // Define o duty cycle do PWM
 }
+
+// Habilita/desabilita o PWM
+void toggle_pwm(uint pin, bool state){
+    uint slice = pwm_gpio_to_slice_num(pin); // obtém o slice PWM conectado á GPIO informada
+
+    pwm_set_enabled(slice,state); // Habilita ou desabilita o PWM para o respectivo slice
+}

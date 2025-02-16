@@ -9,4 +9,5 @@ void update_duty_cycle(uint pin, uint duty_cycle);
 
 float get_duty_cycle(uint wrap, float percentage);
 
+void toggle_pwm(uint pin, bool state);
 #endif
