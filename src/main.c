@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pwm.h"
+#include "joystick.h"
 
 #define A_BUTTON_PIN 5 // GPIO conectada ao botão A
 #define I2C_PORT i2c1 // Porta I2C que será utilizada para a comunicação com o display
@@ -19,11 +21,39 @@
 
 uint last_event_time;
 
+void update_led_bright(){
+    uint x_axis_value = get_joystick_x_value(); // Obtem o valor do eixo x
+    uint y_axis_value = get_joystick_y_value(); // Obtém, o valor do eixo y
+
+    if (x_axis_value == AXIS_CENTER_VALUE){
+        update_duty_cycle(RGB_LED_RED_PIN,0); // Apaga o LED
+    }else if(x_axis_value > AXIS_CENTER_VALUE){
+        update_duty_cycle(RGB_LED_RED_PIN,x_axis_value); // Atualiza o duty cycle do LED vermelho com base no valor lido pelo joystick
+    }else{
+        update_duty_cycle(RGB_LED_RED_PIN,MAX_AXIS_VALUE - x_axis_value); // Atualiza o duty cycle do LED vermelho com base no valor lido pelo joystick, agora para valores menores que a posição central
+    }
+
+    if (y_axis_value == AXIS_CENTER_VALUE){
+        update_duty_cycle(RGB_LED_BLUE_PIN,0); // Apaga o LED
+    }else if(y_axis_value > AXIS_CENTER_VALUE){
+        update_duty_cycle(RGB_LED_BLUE_PIN,y_axis_value); // Atualiza o duty cycle do LED azul com base no valor lido pelo joystick
+    }else{
+        update_duty_cycle(RGB_LED_BLUE_PIN,MAX_AXIS_VALUE - y_axis_value); // Atualiza o duty cycle do LED azul com base no valor lido pelo joystick, agora para valores menores que a posição central
+    }
+}
+
 int main()
 {
     stdio_init_all(); // Inicializa a entrada e saída padrão
 
+    setup_joystick(JOYSTICK_X_PIN,JOYSTICK_Y_PIN); // Configura o joystick
+
+    setup_pwm(RGB_LED_BLUE_PIN,1,MAX_AXIS_VALUE,0); // Configura o PWM para o LED azul
+    setup_pwm(RGB_LED_RED_PIN,1,MAX_AXIS_VALUE,0); // Configura o PWM para o LED vermelho
+
     while (true) {
+        update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
+        
         sleep_ms(50); // Aguarda 50 milissegundos
     }
 }
