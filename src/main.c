@@ -15,13 +15,15 @@
 #define JOYSTICK_BUTTON_PIN 22 // GPIO conectada ao botão central do joystick
 #define MAX_AXIS_VALUE 4095 // Valor máximo que o joystick captura em ambos os eixos
 #define AXIS_CENTER_VALUE 2047 // Valor de ambos os eixos quando o joystick está centralizado
+#define DEBOUNCE_INTERVAL 200000 // Define um intervalo de 200 milisssegundos para debounce
+
+uint last_event_time;
 
 int main()
 {
-    stdio_init_all();
+    stdio_init_all(); // Inicializa a entrada e saída padrão
 
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+        sleep_ms(50); // Aguarda 50 milissegundos
     }
 }
