@@ -46,6 +46,8 @@ void update_led_bright(){
 void buttons_irq_handler(uint gpio, uint32_t events){
     uint64_t current_event_time = to_us_since_boot(get_absolute_time()); // Obtém o tempo atual em microssegundos
     
+    static bool pwm_state = true; // variavél de controle para habilitar/desabilitar o PWM
+    
     // Implementação do debounce via software
     if (current_event_time - last_event_time > DEBOUNCE_INTERVAL){
         last_event_time = current_event_time;
@@ -53,10 +55,17 @@ void buttons_irq_handler(uint gpio, uint32_t events){
         switch (gpio){
             case JOYSTICK_BUTTON_PIN:
                 gpio_put(RGB_LED_GREEN_PIN,!gpio_get(RGB_LED_GREEN_PIN)); // ALterna o estado do LED verde
-                break;
+            break;
+
+            case A_BUTTON_PIN:
+                pwm_state = !pwm_state; // Altera o valor da variável de true para false ou vice-versa
+                
+                toggle_pwm(RGB_LED_BLUE_PIN,pwm_state); // Habilita/desabilita o PWM
+                toggle_pwm(RGB_LED_RED_PIN,pwm_state); // Habilita/desabilita o PWM
+            break;
             
             default:
-                break;
+            break;
         }
     }
 }
@@ -74,7 +83,7 @@ int main()
     gpio_set_dir(RGB_LED_GREEN_PIN,GPIO_OUT); // Define a GPIO como saída
     gpio_put(RGB_LED_GREEN_PIN,0); // Inicializa a GPIO com o nível baixo
 
-    initialize_buttons(0,JOYSTICK_BUTTON_PIN,buttons_irq_handler); // Configura a interrupção para o botão do joystick
+    initialize_buttons(A_BUTTON_PIN,JOYSTICK_BUTTON_PIN,buttons_irq_handler); // Configura a interrupção para o botão do joystick
 
     while (true) {
         update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
