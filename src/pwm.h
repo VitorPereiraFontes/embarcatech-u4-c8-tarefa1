@@ -5,7 +5,7 @@
 
 void setup_pwm(uint pin,float pwm_clock_divisor, uint wrap, uint duty_cycle);
 
-void update_pwm(uint pin, uint duty_cycle);
+void update_duty_cycle(uint pin, uint duty_cycle);
 
 float get_duty_cycle(uint wrap, float percentage);
 
