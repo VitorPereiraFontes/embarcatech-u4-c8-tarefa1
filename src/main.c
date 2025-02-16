@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "pwm.h"
 #include "joystick.h"
+#include "interruption.h"
 
 #define A_BUTTON_PIN 5 // GPIO conectada ao botão A
 #define I2C_PORT i2c1 // Porta I2C que será utilizada para a comunicação com o display
@@ -42,6 +43,24 @@ void update_led_bright(){
     }
 }
 
+void buttons_irq_handler(uint gpio, uint32_t events){
+    uint64_t current_event_time = to_us_since_boot(get_absolute_time()); // Obtém o tempo atual em microssegundos
+    
+    // Implementação do debounce via software
+    if (current_event_time - last_event_time > DEBOUNCE_INTERVAL){
+        last_event_time = current_event_time;
+
+        switch (gpio){
+            case JOYSTICK_BUTTON_PIN:
+                gpio_put(RGB_LED_GREEN_PIN,!gpio_get(RGB_LED_GREEN_PIN)); // ALterna o estado do LED verde
+                break;
+            
+            default:
+                break;
+        }
+    }
+}
+
 int main()
 {
     stdio_init_all(); // Inicializa a entrada e saída padrão
@@ -50,6 +69,12 @@ int main()
 
     setup_pwm(RGB_LED_BLUE_PIN,1,MAX_AXIS_VALUE,0); // Configura o PWM para o LED azul
     setup_pwm(RGB_LED_RED_PIN,1,MAX_AXIS_VALUE,0); // Configura o PWM para o LED vermelho
+
+    gpio_init(RGB_LED_GREEN_PIN); // Inicializa a GPIO conectada ao LED verde
+    gpio_set_dir(RGB_LED_GREEN_PIN,GPIO_OUT); // Define a GPIO como saída
+    gpio_put(RGB_LED_GREEN_PIN,0); // Inicializa a GPIO com o nível baixo
+
+    initialize_buttons(0,JOYSTICK_BUTTON_PIN,buttons_irq_handler); // Configura a interrupção para o botão do joystick
 
     while (true) {
         update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
