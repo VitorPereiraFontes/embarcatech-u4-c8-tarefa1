@@ -9,14 +9,14 @@ void setup_joystick(uint x_axis_pin, uint y_axis_pin){
 
 // Lê a posição do joystick no eixo horizontal
 uint16_t get_joystick_x_value(){
-    adc_select_input(JOYSTICK_X_AXIS_MULTIPLEXER_INPUT);
+    adc_select_input(JOYSTICK_Y_AXIS_MULTIPLEXER_INPUT);
 
     return adc_read();
 }
 
 // Lê a posição do joystick no eixo vertical
 uint16_t get_joystick_y_value(){
-    adc_select_input(JOYSTICK_Y_AXIS_MULTIPLEXER_INPUT);
+    adc_select_input(JOYSTICK_X_AXIS_MULTIPLEXER_INPUT);
 
     return adc_read();
 }
