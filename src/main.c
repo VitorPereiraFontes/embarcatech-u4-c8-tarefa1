@@ -131,13 +131,13 @@ void update_display(){
     }
 
     // Verifica se o joystick está na posição de descanso para centralizar o quadrado
-    if (x_axis_value > X_AXIS_CENTER_VALUE - 50 && x_axis_value < X_AXIS_CENTER_VALUE + 50){
+    if (x_axis_value > X_AXIS_CENTER_VALUE - 100 && x_axis_value < X_AXIS_CENTER_VALUE + 100){
         left = 60;
     }
 
     // Verifica se o joystick está na posição de descanso para centralizar o quadrado
     if (y_axis_value > Y_AXIS_CENTER_VALUE - 50 && y_axis_value < Y_AXIS_CENTER_VALUE + 50){
-        top = 30;
+        top = 28;
     }
 
     clear_display(); // Limpa o display
