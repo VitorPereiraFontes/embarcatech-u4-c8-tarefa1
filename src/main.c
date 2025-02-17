@@ -18,7 +18,9 @@
 #define JOYSTICK_Y_PIN 27 // GPIO conectada ao eixo y do joystick
 #define JOYSTICK_BUTTON_PIN 22 // GPIO conectada ao botão central do joystick
 #define MAX_AXIS_VALUE 4095 // Valor máximo que o joystick captura em ambos os eixos
-#define AXIS_CENTER_VALUE 2047 // Valor de ambos os eixos quando o joystick está centralizado
+#define X_AXIS_CENTER_VALUE 2094 // Valor do eixo x quando o joystick está centralizado
+#define Y_AXIS_CENTER_VALUE 2120 // Valor do eixo y quando o joystick está centralizado
+#define AXIS_OFFSET 300 // Offset para regular a sensibilidade dos LED's
 #define DEBOUNCE_INTERVAL 200000 // Define um intervalo de 200 milisssegundos para debounce
 
 void draw_rectangle(uint top, uint left, uint width, uint height, bool visible);
@@ -30,17 +32,19 @@ void update_led_bright(){
     uint x_axis_value = get_joystick_x_value(); // Obtem o valor do eixo x
     uint y_axis_value = get_joystick_y_value(); // Obtém, o valor do eixo y
 
-    if (x_axis_value == AXIS_CENTER_VALUE){
+    printf("X: %d - Y: %d\n",x_axis_value,y_axis_value);
+
+    if (x_axis_value > X_AXIS_CENTER_VALUE - AXIS_OFFSET && x_axis_value < X_AXIS_CENTER_VALUE + AXIS_OFFSET){
         update_duty_cycle(RGB_LED_RED_PIN,0); // Apaga o LED
-    }else if(x_axis_value > AXIS_CENTER_VALUE){
+    }else if(x_axis_value > X_AXIS_CENTER_VALUE){
         update_duty_cycle(RGB_LED_RED_PIN,x_axis_value); // Atualiza o duty cycle do LED vermelho com base no valor lido pelo joystick
     }else{
         update_duty_cycle(RGB_LED_RED_PIN,MAX_AXIS_VALUE - x_axis_value); // Atualiza o duty cycle do LED vermelho com base no valor lido pelo joystick, agora para valores menores que a posição central
     }
 
-    if (y_axis_value == AXIS_CENTER_VALUE){
+    if (y_axis_value > Y_AXIS_CENTER_VALUE - AXIS_OFFSET && y_axis_value < Y_AXIS_CENTER_VALUE + AXIS_OFFSET){
         update_duty_cycle(RGB_LED_BLUE_PIN,0); // Apaga o LED
-    }else if(y_axis_value > AXIS_CENTER_VALUE){
+    }else if(y_axis_value > Y_AXIS_CENTER_VALUE){
         update_duty_cycle(RGB_LED_BLUE_PIN,y_axis_value); // Atualiza o duty cycle do LED azul com base no valor lido pelo joystick
     }else{
         update_duty_cycle(RGB_LED_BLUE_PIN,MAX_AXIS_VALUE - y_axis_value); // Atualiza o duty cycle do LED azul com base no valor lido pelo joystick, agora para valores menores que a posição central
