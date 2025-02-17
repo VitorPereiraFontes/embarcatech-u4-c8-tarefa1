@@ -27,12 +27,11 @@ void draw_rectangle(uint top, uint left, uint width, uint height, bool visible);
 
 uint last_event_time;
 ssd1306_t display; // Inicializa a estrutura do display
+bool rectangle_state = false; // Variável de controle para o retângulo externo
 
 void update_led_bright(){
     uint x_axis_value = get_joystick_x_value(); // Obtem o valor do eixo x
     uint y_axis_value = get_joystick_y_value(); // Obtém, o valor do eixo y
-
-    printf("X: %d - Y: %d\n",x_axis_value,y_axis_value);
 
     if (x_axis_value > X_AXIS_CENTER_VALUE - AXIS_OFFSET && x_axis_value < X_AXIS_CENTER_VALUE + AXIS_OFFSET){
         update_duty_cycle(RGB_LED_RED_PIN,0); // Apaga o LED
@@ -56,8 +55,6 @@ void buttons_irq_handler(uint gpio, uint32_t events){
     
     static bool pwm_state = true; // variavél de controle para habilitar/desabilitar o PWM
 
-    static bool rectangle_state = false;
-    
     // Implementação do debounce via software
     if (current_event_time - last_event_time > DEBOUNCE_INTERVAL){
         last_event_time = current_event_time;
@@ -66,9 +63,7 @@ void buttons_irq_handler(uint gpio, uint32_t events){
             case JOYSTICK_BUTTON_PIN:
                 gpio_put(RGB_LED_GREEN_PIN,!gpio_get(RGB_LED_GREEN_PIN)); // ALterna o estado do LED verde
 
-                rectangle_state = !rectangle_state; // Altera o valor da variável de true para false ou vice-versa
-                
-                draw_rectangle(0,0,WIDTH-1,HEIGHT-1, rectangle_state); // Desenha/esconde o retângulo externo
+                rectangle_state = !rectangle_state; // Altera o valor da variável de true para false ou vice-versa                
             break;
 
             case A_BUTTON_PIN:
@@ -86,17 +81,14 @@ void buttons_irq_handler(uint gpio, uint32_t events){
 
 void draw_square(uint top, uint left){
     ssd1306_rect(&display, top, left, 8, 8, true, true); // Desenha um quadrado
-    ssd1306_send_data(&display); // Envia os dados para o display
 }
 
 void draw_rectangle(uint top, uint left, uint width, uint height,bool visible){
     ssd1306_rect(&display, top, left, width, height, visible, false); // Desenha um retângulo
-    ssd1306_send_data(&display); // Envia os dados para o display
 }
 
 void clear_display(){
     ssd1306_fill(&display, false); // Limpa o display. O display inicia com todos os pixels apagados.
-    ssd1306_send_data(&display); // Envia os dados para o display
 }
 
 void init_display(){
@@ -108,6 +100,56 @@ void init_display(){
 
     ssd1306_init(&display, WIDTH, HEIGHT, false, OLED_DISPLAY_ADDRESS, I2C_PORT); // Inicializa o display
     ssd1306_config(&display); // Configura o display
+    ssd1306_send_data(&display); // Envia os dados para o display
+}
+
+void update_display(){
+    uint x_axis_value = get_joystick_x_value(); // Obtem o valor do eixo x
+    uint y_axis_value = get_joystick_y_value(); // Obtém, o valor do eixo y
+
+    uint top = (MAX_AXIS_VALUE - y_axis_value) * (HEIGHT - 1) / MAX_AXIS_VALUE; // Calcula a posição y do quadrado com base no tamanho do diaplay e no valor lido pelo ADC
+    uint left = x_axis_value * (WIDTH - 1) / MAX_AXIS_VALUE; // Calcula a posição x do quadrado com base no tamanho do diaplay e no valor lido pelo ADC
+
+    // Ajusta o valor do top para permitir que o quadrado encoste na borda superior
+    if (top < 2){
+        top = 2;
+    }
+
+    // Ajusta o valor do top para permitir que o quadrado encoste na borda inferior
+    if (top > HEIGHT - 8){
+        top = HEIGHT - 1 - 2 - 7;
+    }
+
+    // Ajusta o valor do left para permitir que o quadrado encoste na borda esquerda
+    if (left < 2){
+        left = 2;
+    }
+
+    // Ajusta o valor do top para permitir que o quadrado encoste na borda inferior
+    if (left > WIDTH - 8){
+        left = WIDTH - 1 - 2 - 7;
+    }
+
+    // Verifica se o joystick está na posição de descanso para centralizar o quadrado
+    if (x_axis_value > X_AXIS_CENTER_VALUE - 50 && x_axis_value < X_AXIS_CENTER_VALUE + 50){
+        left = 60;
+    }
+
+    // Verifica se o joystick está na posição de descanso para centralizar o quadrado
+    if (y_axis_value > Y_AXIS_CENTER_VALUE - 50 && y_axis_value < Y_AXIS_CENTER_VALUE + 50){
+        top = 30;
+    }
+
+    clear_display(); // Limpa o display
+
+    if (rectangle_state){
+        draw_rectangle(0,0,WIDTH-1,HEIGHT-1, rectangle_state); // Desenha/esconde o retângulo externo
+    }
+    
+    draw_rectangle(1,1,WIDTH-3,HEIGHT-3,true); // Desenha o retângulo interno
+
+    draw_square(top,left);
+
     ssd1306_send_data(&display); // Envia os dados para o display
 }
 
@@ -134,6 +176,8 @@ int main()
 
     while (true) {
         update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
+
+        update_display(); // Atualiza as informações do display
         
         sleep_ms(50); // Aguarda 50 milissegundos
     }
