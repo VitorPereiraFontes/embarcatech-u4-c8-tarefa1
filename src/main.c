@@ -21,6 +21,8 @@
 #define AXIS_CENTER_VALUE 2047 // Valor de ambos os eixos quando o joystick está centralizado
 #define DEBOUNCE_INTERVAL 200000 // Define um intervalo de 200 milisssegundos para debounce
 
+void draw_rectangle(uint top, uint left, uint width, uint height, bool visible);
+
 uint last_event_time;
 ssd1306_t display; // Inicializa a estrutura do display
 
@@ -49,6 +51,8 @@ void buttons_irq_handler(uint gpio, uint32_t events){
     uint64_t current_event_time = to_us_since_boot(get_absolute_time()); // Obtém o tempo atual em microssegundos
     
     static bool pwm_state = true; // variavél de controle para habilitar/desabilitar o PWM
+
+    static bool rectangle_state = false;
     
     // Implementação do debounce via software
     if (current_event_time - last_event_time > DEBOUNCE_INTERVAL){
@@ -57,6 +61,10 @@ void buttons_irq_handler(uint gpio, uint32_t events){
         switch (gpio){
             case JOYSTICK_BUTTON_PIN:
                 gpio_put(RGB_LED_GREEN_PIN,!gpio_get(RGB_LED_GREEN_PIN)); // ALterna o estado do LED verde
+
+                rectangle_state = !rectangle_state; // Altera o valor da variável de true para false ou vice-versa
+                
+                draw_rectangle(0,0,WIDTH-1,HEIGHT-1, rectangle_state); // Desenha/esconde o retângulo externo
             break;
 
             case A_BUTTON_PIN:
@@ -77,8 +85,8 @@ void draw_square(uint top, uint left){
     ssd1306_send_data(&display); // Envia os dados para o display
 }
 
-void draw_rectangle(uint top, uint left, uint width, uint height){
-    ssd1306_rect(&display, top, left, width, height, true, false); // Desenha um retângulo
+void draw_rectangle(uint top, uint left, uint width, uint height,bool visible){
+    ssd1306_rect(&display, top, left, width, height, visible, false); // Desenha um retângulo
     ssd1306_send_data(&display); // Envia os dados para o display
 }
 
@@ -117,6 +125,8 @@ int main()
     init_display(); //Inicializa o display OLED
 
     clear_display(); // Limpa o display OLED
+
+    draw_rectangle(1,1,WIDTH-3,HEIGHT-3,true); // Desenha o retângulo interno
 
     while (true) {
         update_led_bright(); // Captura a entrada do joystick e atualiza a potência dos LED's
