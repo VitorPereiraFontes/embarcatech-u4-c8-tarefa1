@@ -20,6 +20,8 @@ O presente projeto deverá atender aos seguintes requerimentos:
 
 Segue o vídeo de demonstração do projeto:
 
+https://github.com/user-attachments/assets/2e0b394d-a982-416e-a1c0-e43fe314623a
+
 ## Instruções
 
 Para que o projeto funcione em sua máquina, é necessário ter a extensão Raspberry Pi Pico Project instalada no VSCode.
@@ -27,4 +29,4 @@ Para que o projeto funcione em sua máquina, é necessário ter a extensão Rasp
 1. Realize o clone do repositório.
 2. Importe o repositório como um projeto através da extensão Raspberry Pi Pico Project.
 3. Compile o projeto.
-4. Caso esteja usando a placa BitDogLab ou a Raspberry Pi Pico W, faça o upload do arquivo uf2, encontrado na pasta `build` após o processo de compilação, para a placa. Caso deseje simular, abra o arquivo `diagram.json` (É necessário ter a extensão do Wokwi instalada).
+4. Caso esteja usando a placa BitDogLab ou a Raspberry Pi Pico W, faça o upload do arquivo uf2, encontrado na pasta `build` após o processo de compilação, para a placa. Caso deseje simular, abra o arquivo `diagram.json` (É necessário ter a extensão do Wokwi instalada). Dentro do ambiente de simulação, os eixos do joystick estarão inverdidos, e o quadrado não estará centralizado, essas incronguências ocorrem devido às características de fabricação da placa BitDogLab, uma vez que o principal objetivo é que este projeto execute na mesma.
